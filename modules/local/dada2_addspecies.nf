@@ -35,11 +35,16 @@ process DADA2_ADDSPECIES {
     if ( !"Species" %in% taxlevels ) { taxlevels <- c(taxlevels,"Species") }
 
     taxtable <- readRDS(\"$taxtable\")
+    tx <- taxtable
 
     #remove Species annotation from assignTaxonomy
-    taxa_nospecies <- taxtable[,!colnames(taxtable) %in% 'Species']
+    tx\$Species <- NA
 
-    tx <- addSpecies(taxa_nospecies, \"$database\", $args, verbose=TRUE)
+    #identify concatenated sequences
+    concat_seq_index <- grep("NNNNNNNNNN", row.names(tx), invert = TRUE)
+
+    #add species to sequences without 10 Ns
+    tx[concat_seq_index,] <- addSpecies(taxa_nospecies[concat_seq_index,], \"$database\", $args, verbose=TRUE)
 
     # Create a table with specified column order
     tmp <- data.frame(row.names(tx)) # To separate ASV_ID from sequence
