@@ -35,13 +35,14 @@ process DADA2_ADDSPECIES {
     if ( !"Species" %in% taxlevels ) { taxlevels <- c(taxlevels,"Species") }
 
     taxtable <- readRDS(\"$taxtable\")
-    tx <- taxtable
 
-    #remove Species annotation from assignTaxonomy
-    tx\$Species <- NA
+    #replace Species annotation by NAs
+    taxa_nospecies <- taxtable[, !colnames(taxtable) %in% 'Species']
+    Species <- rep(NA, nrow(taxa_nospecies))
+    tx <- cbind(taxa_nospecies, Species)
 
     #identify concatenated sequences
-    concat_seq_index <- grep("NNNNNNNNNN", row.names(tx), invert = TRUE)
+    concat_seq_index <- grep("NNNNNNNNNN", row.names(taxa_nospecies), invert = TRUE)
 
     #add species to sequences without 10 Ns
     tx[concat_seq_index,] <- addSpecies(taxa_nospecies[concat_seq_index,], \"$database\", $args, verbose=TRUE)
